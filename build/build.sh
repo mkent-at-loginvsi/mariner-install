@@ -75,12 +75,12 @@ fi
 echo "----------------------------------------------------------------"
 echo "Check if ISO is mounted"
 echo "----------------------------------------------------------------"
-if ! [ -d /media/iso ]; then
-  sudo mkdir /media/iso
+if ! [ -d /mnt/iso ]; then
+  mkdir /mnt/iso
 fi
 
-if ! [ -d /media/iso/update ]; then
-  sudo mount $BUILD_DIR/$isoFile /media/iso -o loop
+if ! [ -d /mnt/iso/update ]; then
+  mount $BUILD_DIR/$isoFile /mnt/iso -o loop
 fi
 
 # Fail if ISO doesn't exist
