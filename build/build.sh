@@ -87,7 +87,7 @@ fi
 echo "----------------------------------------------------------------"
 echo "Checking if ISO Mounted"
 echo "----------------------------------------------------------------"
-if ! [ -f /mnt/iso/update ]; then
+if ! [ -d /mnt/iso/update ]; then
   echo "Mount failed"
   exit 1
 fi
