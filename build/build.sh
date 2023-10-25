@@ -115,22 +115,22 @@ fi
 echo "----------------------------------------------------------------"
 echo "Mounting Virtual Hard Drive"
 echo "----------------------------------------------------------------"
-sudo mkdir /mnt/vhd
-sudo chmod 777 /mnt/vhd
+sudo mkdir /vhd
+sudo chmod 777 /vhd
 
 mountpath="$BUILD_DIR"
 LIBGUESTFS_BACKEND=direct
 export LIBGUESTFS_BACKEND
 
-if ! [ -d /mnt/vhd/loginvsi ]; then
-  guestmount --add $mountpath/AZ-VA-LoginEnterprise-5.4.6.vhd --ro /mnt/vhd/ -m /dev/sda1
+if ! [ -d /vhd/loginvsi ]; then
+  guestmount --add $mountpath/AZ-VA-LoginEnterprise-5.4.6.vhd --ro /vhd/ -m /dev/sda1
 fi
 
 # Fail if VHD doesn't exist
 echo "----------------------------------------------------------------"
 echo "Checking if VHD Mounted"
 echo "----------------------------------------------------------------"
-if ! [ -d /mnt/vhd/loginvsi ]; then
+if ! [ -d /vhd/loginvsi ]; then
   echo "Mount failed"
   exit 1
 fi
@@ -143,19 +143,19 @@ build_out=$BUILD_DIR/$out_dir
 mkdir $build_out
 
 # Copy Login Enterprise Installation
-cp -r /mnt/vhd/loginvsi $build_out/
+cp -r /vhd/loginvsi $build_out/
 
 # Copy Login Enterprise Service
 mkdir -p $build_out/etc/systemd/system/
-cp -f /mnt/vhd/etc/systemd/system/loginvsid.service $build_out/etc/systemd/system/loginvsid.service
+cp -f /vhd/etc/systemd/system/loginvsid.service $build_out/etc/systemd/system/loginvsid.service
 
 # Copy Docker Images
 imageFile="images.tar.gz"
 mkdir -p $build_out/images
-cp -r /media/iso/$imageFile $build_out/images/
+cp -r /mnt/iso/$imageFile $build_out/images/
 
 #Copy Login Enterprise Service Watcher
-cp -f /mnt/vhd/etc/systemd/system/pi_guard.service $build_out/etc/systemd/system/pi_guard.service
+cp -f /vhd/etc/systemd/system/pi_guard.service $build_out/etc/systemd/system/pi_guard.service
 
 echo "----------------------------------------------------------------"
 echo "Downloading pdmenu to $BUILD_DIR/rpms"
@@ -167,8 +167,8 @@ curl -L -O $pdmenuSourceUrl
 
 #Copy firstrun, daemon and Menuing
 mkdir -p $build_out/usr/bin
-cp -f /mnt/vhd/usr/bin/loginvsid $build_out/usr/bin/loginvsid
-cp -f /mnt/vhd/usr/bin/pdmenu $build_out/usr/bin/pdmenu
+cp -f /vhd/usr/bin/loginvsid $build_out/usr/bin/loginvsid
+cp -f /vhd/usr/bin/pdmenu $build_out/usr/bin/pdmenu
 curl -o $build_out/usr/bin/pdmenu https://github.com/mkent-at-loginvsi/rhel-install/raw/main/pdmenu/pdmenu.rhel
 
 #zip up appliance build
@@ -184,8 +184,8 @@ cd $WORK_DIR
 echo "----------------------------------------------------------------"
 echo "Cleaning up"
 echo "----------------------------------------------------------------"
-#sudo guestunmount /mnt/vhd
-#sudo umount /media/iso
+#sudo guestunmount /vhd
+#sudo umount /mnt/iso
 #sh clean.sh
 unset BUILD_DIR
 unset WORK_DIR
