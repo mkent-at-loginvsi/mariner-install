@@ -1,5 +1,5 @@
 #!/bin/bash
-temp_dir="/install/rhel-install"
+temp_dir="/install/mariner-install"
 tar_file="appliance.tar.gz"
 username="admin"
 
@@ -180,8 +180,8 @@ ln -s /usr/bin/python3 /usr/bin/python
 echo "----------------------------------------------------------------"
 echo "### Install Packages ###"
 echo "----------------------------------------------------------------"
-sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-sudo dnf upgrade
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+dnf upgrade
 yum update -qq -y
 yum install -y \
      ca-certificates \
