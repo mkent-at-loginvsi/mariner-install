@@ -268,15 +268,17 @@ sed -i '\|dpkg-reconfigure -f noninteractive openssh-server|d' /loginvsi/bin/fir
 echo "----------------------------------------------------------------"
 echo "### Fix Appliance Guard Url ###"
 echo "----------------------------------------------------------------"
-sed -i 'APPLIANCE_GUARD_URL=192.168.126.1:8080,APPLIANCE_GUARD_URL=172.18.0.1:8080/g' /loginvsi/.env
+sed -i 's/APPLIANCE_GUARD_URL=192.168.126.1:8080/APPLIANCE_GUARD_URL=172.18.0.1:8080/g' /loginvsi/.env
 
 echo "----------------------------------------------------------------"
 echo "### Prevent Cloud Init changing hostname ###"
 echo "----------------------------------------------------------------"
-sed -i '/preserve_hostname: false,preserve_hostname: true/g' /etc/cloud/cloud.cfg
-sed -i 's/- set_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
-sed -i 's/- update_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
-sed -i 's/- update_etc_hosts/#- set_hostname/g' /etc/cloud/cloud.cfg
+if [ -f /etc/selinux/config ]; then
+     sed -i '/preserve_hostname: false,preserve_hostname: true/g' /etc/cloud/cloud.cfg
+     sed -i 's/- set_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
+     sed -i 's/- update_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
+     sed -i 's/- update_etc_hosts/#- set_hostname/g' /etc/cloud/cloud.cfg
+fi
 
 echo "----------------------------------------------------------------"
 echo "### completing firstrun ###"
@@ -285,7 +287,7 @@ touch -f /loginvsi/first_run.chk
 
 echo "----------------------------------------------------------------"
 echo "as root:"
-echo "domainname <yourdnssuffix ie: us-west-1.compute.amazonaws.com>"
+echo "domainname <yourdnssuffix ie: westus.cloudapp.azure.com>"
 echo "bash /loginvsi/bin/firstrun"
 echo ""
 echo "----------------------------------------------------------------"
