@@ -195,7 +195,7 @@ rpm -ivh --nodeps $temp_dir/appliance/*.rpm
 echo "----------------------------------------------------------------"
 echo "### Unzipping arhive and installing files ###"
 echo "----------------------------------------------------------------"
-mkdir $temp_dir
+mkdir -p $temp_dir
 tar -zxvf $tar_file -C $temp_dir
 cp -R $temp_dir/appliance/loginvsi /
 cp -R $temp_dir/appliance/usr /
@@ -229,17 +229,18 @@ yum remove -y docker \
 
 yum install -y yum-utils
 
-subscription-manager repos --enable=rhel-7-server-rpms \
-  --enable=rhel-7-server-extras-rpms \
-  --enable=rhel-7-server-optional-rpms
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+#subscription-manager repos --enable=rhel-7-server-rpms \
+#  --enable=rhel-7-server-extras-rpms \
+#  --enable=rhel-7-server-optional-rpms
+#yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+#yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 echo "----------------------------------------------------------------"
-echo "### Installing Docker ###"
+echo "### Installing Docker (Moby) ###"
 echo "----------------------------------------------------------------"
-yum install -y docker-ce docker-ce-cli containerd.io
+#yum install -y docker-ce docker-ce-cli containerd.io
+tdnf install -y moby-engine moby-cli
 
 echo "----------------------------------------------------------------"
 echo "### Starting Docker ###"
