@@ -20,6 +20,9 @@ if [ -f /etc/selinux/config ]; then
      fi
 fi
 
+echo "----------------------------------------------------------------"
+echo "### Checking if script is run as root ###"
+echo "----------------------------------------------------------------"
 if [ $USER != 'root' ]; then
    echo "----------------------------------------------------------------"
    echo "### This script must be run as root! ###"
@@ -27,6 +30,9 @@ if [ $USER != 'root' ]; then
    exit 1
 fi
 
+echo "----------------------------------------------------------------"
+echo "### Checking Diskspace ###"
+echo "----------------------------------------------------------------"
 FREE=`df -k / --output=avail "$PWD" | tail -n1`   # df -k not df -h
 if [ $FREE -lt 27262976 ]; then # 26G = 26*1024*1024k 
      # less than 26GBs free!
@@ -36,6 +42,9 @@ if [ $FREE -lt 27262976 ]; then # 26G = 26*1024*1024k
      exit 1
 fi
 
+echo "----------------------------------------------------------------"
+echo "### Checking CPUs ###"
+echo "----------------------------------------------------------------"
 CPUS=`getconf _NPROCESSORS_ONLN`
 if [ $CPUS -lt 2 ]; then
      echo "----------------------------------------------------------------"
@@ -44,6 +53,9 @@ if [ $CPUS -lt 2 ]; then
      exit 1
 fi
 
+echo "----------------------------------------------------------------"
+echo "### Checking RAM ###"
+echo "----------------------------------------------------------------"
 RAM=`free -m | grep "Mem*" | awk '{s+=$2} END {print $2}'`
 if [ ${#RAM} != 0 ]; then
      if [ $RAM -lt 4 ]; then
