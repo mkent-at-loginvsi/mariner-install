@@ -273,7 +273,7 @@ sed -i 's/APPLIANCE_GUARD_URL=192.168.126.1:8080/APPLIANCE_GUARD_URL=172.18.0.1:
 echo "----------------------------------------------------------------"
 echo "### Prevent Cloud Init changing hostname ###"
 echo "----------------------------------------------------------------"
-if [ -f /etc/selinux/config ]; then
+if [ -f /etc/cloud/cloud.cfg ]; then
      sed -i '/preserve_hostname: false,preserve_hostname: true/g' /etc/cloud/cloud.cfg
      sed -i 's/- set_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
      sed -i 's/- update_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
