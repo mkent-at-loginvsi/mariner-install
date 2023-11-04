@@ -44,7 +44,7 @@ if [ $CPUS -lt 2 ]; then
      exit 1
 fi
 
-RAM=`dmidecode -t 17 | grep "Size.*GB" | awk '{s+=$2} END {print $2}'`
+RAM=`free -m | grep "Mem*" | awk '{s+=$2} END {print $2}'`
 if [ ${#RAM} != 0 ]; then
      if [ $RAM -lt 4 ]; then
           echo "----------------------------------------------------------------"
@@ -53,7 +53,7 @@ if [ ${#RAM} != 0 ]; then
           exit 1
      fi
 else
-     RAM=`dmidecode -t 17 | grep "Size.*MB" | awk '{s+=$2} END {print $2}'`
+     RAM=`free -m | grep "Mem*" | awk '{s+=$2} END {print $2}'`
           if [ $RAM -lt 4096 ]; then
           echo "----------------------------------------------------------------"
           echo "### WARNING: 4096 MB RAM Required! ###"
