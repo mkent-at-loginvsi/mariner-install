@@ -2,5 +2,5 @@
 .DS_Store
 Vagrantfile
 .vagrant/
-build/build-*/
+build*
 *.tar.gz
