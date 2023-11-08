@@ -1,4 +1,7 @@
 #!/bin/bash
+# TODO: Move user and group properly away from id's Login Enterprise expects
+# TODO: Fix shell scripts (incl trim)
+
 temp_dir="/install/mariner-install"
 tar_file="appliance.tar.gz"
 username="admin"
@@ -126,7 +129,7 @@ fi
 
 if [ -f /etc/sysctl.conf ]; then
      echo "----------------------------------------------------------------"
-     echo "### /etc/sysctl.conf already exists! ###"
+     echo "### /etc/sysctl.conf already exists ###"
      echo "----------------------------------------------------------------"
      #exit 1
 else
@@ -163,7 +166,7 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_
 systemctl restart sshd
 
 echo "----------------------------------------------------------------"
-echo "### Set Defaults ###"
+echo "### Set Defaults (sysctl.conf) ###"
 echo "----------------------------------------------------------------"
 echo "
 net.ipv4.conf.all.accept_redirects=0
@@ -192,8 +195,6 @@ ln -s /usr/bin/python3 /usr/bin/python
 echo "----------------------------------------------------------------"
 echo "### Install Packages ###"
 echo "----------------------------------------------------------------"
-dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-dnf upgrade
 yum update -qq -y
 yum install -y \
      ca-certificates \
@@ -202,6 +203,8 @@ yum install -y \
      lsb-release \
      unzip \
      nano-editor
+
+curl -o $temp_dir/appliance/pdmenu-1.3.2-3.2.x86_64.rpm https://download.opensuse.org/repositories/shells/CentOS_5/x86_64/pdmenu-1.3.2-3.2.x86_64.rpm
 rpm -ivh --nodeps $temp_dir/appliance/*.rpm
 
 echo "----------------------------------------------------------------"
@@ -241,17 +244,9 @@ yum remove -y docker \
 
 yum install -y yum-utils
 
-#subscription-manager repos --enable=rhel-7-server-rpms \
-#  --enable=rhel-7-server-extras-rpms \
-#  --enable=rhel-7-server-optional-rpms
-#yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-#yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
 echo "----------------------------------------------------------------"
 echo "### Installing Docker (Moby) ###"
 echo "----------------------------------------------------------------"
-#yum install -y docker-ce docker-ce-cli containerd.io
 tdnf install -y moby-engine moby-cli
 
 echo "----------------------------------------------------------------"
@@ -293,12 +288,105 @@ if [ -f /etc/cloud/cloud.cfg ]; then
 fi
 
 echo "----------------------------------------------------------------"
+echo "### Fix SSL Cert Paths in compose ###"
+echo "----------------------------------------------------------------"
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/InternalDB/docker-compose.yml
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/InternalDB/docker-compose.migration.yml
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/Infra/docker-compose.yml
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/ExternalDB/docker-compose.yml
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/ExternalDB/docker-compose.migration.yml
+
+echo "----------------------------------------------------------------"
+echo "### Copy CA to Cert Path ###"
+echo "----------------------------------------------------------------"
+cp /certificates/CA.crt /etc/pki/ca-trust/source/anchors
+update-ca-trust
+
+#Docker does not have access to symlinks to certificates, so we copy the ca bundle back
+cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ca-certificates.crt
+
+# echo "----------------------------------------------------------------"
+# echo "### Set permissions masks ###"
+# echo "----------------------------------------------------------------"
+# #-- Directories
+# # Set /loginvsi
+# chmod -R 755 /loginvsi
+# chown -R admin:admin /loginvsi
+
+# # Set /loginvsi/bin/grafana
+# chmod -R 555 /loginvsi/bin/grafana
+# chown -R root:root /loginvsi/bin/grafana
+
+# # Set /loginvsi/content/zip
+# chmod 775 /loginvsi/content/zip
+# chown -R admin:loginenterprise /loginvsi/content/zip
+
+# #Set /loginvsi/logs
+# chmod -R 755 /loginvsi/logs
+# chown -R root:loginenterprise /loginvsi/logs
+
+# #Set /loginvsi/settings
+# chmod -R 755 /loginvsi/settings
+# chown -R 999:loginenterprise /loginvsi/settings
+
+# #--- Files
+# #Set /loginvsi/.env /loginvsi/.title
+# chmod 644 /loginvsi/.env /loginvsi/.title
+# chown root:root /loginvsi/.env /loginvsi/.title
+
+# #Set /loginvsi/bin/firstrun
+# chmod 755 /loginvsi/bin/firstrun
+# chown root:root /loginvsi/bin/firstrun
+
+# #Set /loginvsi/bin/start/trimfilesystem
+# chmod 555 /loginvsi/bin/start/trimfilesystem
+# chown root:root /loginvsi/bin/start/trimfilesystem
+
+# #Set /loginvsi/bin/start/cleanupdockerimages
+# chmod 555 /loginvsi/bin/start/cleanupdockerimages
+# chown root:root /loginvsi/bin/start/cleanupdockerimages
+
+# #Set /loginvsi/content/CA.crt
+# chmod 644 /loginvsi/content/CA.crt
+# chown admin:admin /loginvsi/content/CA.crt
+
+# #Set /loginvsi/first_run.chk
+# chmod 644 /loginvsi/first_run.chk
+# chown root:root /loginvsi/first_run.chk
+
+# #Set /loginvsi/second_run.chk
+# chmod 644 /loginvsi/second_run.chk
+# chown root:root /loginvsi/second_run.chk
+
+# #Set /loginvsi/settings/appsettings.all.json
+# chmod 664 /loginvsi/settings/appsettings.all.json
+# chown root:loginenterprise /loginvsi/settings/appsettings.all.json
+
+# #Set /loginvsi/content/zip/secured/logon.zip
+# chmod 664 /loginvsi/content/zip/secured/logon.zip
+# chown admin:loginenterprise /loginvsi/content/zip/secured/logon.zip
+
+# chmod -R +x /loginvsi/bin/*
+
+# chmod 755 /usr/bin/loginvsid
+# chown root:root /usr/bin/loginvsid
+
+# chmod 755 /etc/systemd/system/loginvsid.service
+# chown root:root /etc/systemd/system/loginvsid.service
+
+# chmod 755 /etc/systemd/system/pi_guard.service
+# chown root:root /etc/systemd/system/pi_guard.service
+
+# sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
+
+echo "----------------------------------------------------------------"
 echo "### completing firstrun ###"
 echo "----------------------------------------------------------------"
 touch -f /loginvsi/first_run.chk
 
 echo "----------------------------------------------------------------"
-echo "as root:"
+echo "Installation is complete, but we need to configure some things."
+echo "As root, run the following commands:"
 echo "domainname <yourdnssuffix ie: westus.cloudapp.azure.com>"
 echo "bash /loginvsi/bin/firstrun"
 echo ""
