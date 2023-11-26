@@ -86,6 +86,7 @@ mkswap /swapfile
 swapon /swapfile
 echo '/swapfile swap swap defailts 0 0'| tee -a /etc/fstab
 
+#TODO: FIX ADMIN CHECK
 if id -u "admin" >/dev/null 2>&1; then
   admincheck=$(id -u admin)
 else
@@ -202,10 +203,8 @@ yum install -y \
      gnupg \
      lsb-release \
      unzip \
-     nano-editor
-
-curl -o $temp_dir/appliance/pdmenu-1.3.2-3.2.x86_64.rpm https://download.opensuse.org/repositories/shells/CentOS_5/x86_64/pdmenu-1.3.2-3.2.x86_64.rpm
-rpm -ivh --nodeps $temp_dir/appliance/*.rpm
+     nano \
+     libicu
 
 echo "----------------------------------------------------------------"
 echo "### Unzipping arhive and installing files ###"
@@ -224,6 +223,13 @@ mv $temp_dir/appliance/usr/bin/pdmenu /usr/bin/pdmenu
 chmod -R +x /loginvsi/bin/*
 chmod +x /usr/bin/loginvsid
 chown root:root /usr/bin/loginvsid
+
+echo "----------------------------------------------------------------"
+echo "### Download and Install PDMENU ###"
+echo "----------------------------------------------------------------"
+curl -o $temp_dir/appliance/pdmenu-1.3.2-3.2.x86_64.rpm https://download.opensuse.org/repositories/shells/CentOS_5/x86_64/pdmenu-1.3.2-3.2.x86_64.rpm
+rpm -ivh --nodeps $temp_dir/appliance/*.rpm
+
 
 echo "----------------------------------------------------------------"
 echo "### Uninstalling Docker ###"
@@ -303,7 +309,8 @@ cp /certificates/CA.crt /etc/pki/ca-trust/source/anchors
 update-ca-trust
 
 #Docker does not have access to symlinks to certificates, so we copy the ca bundle back
-cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ca-certificates.crt
+unlink /etc/ssl/certs/ca-certificates.crt
+cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certificates.crt
 
 # echo "----------------------------------------------------------------"
 # echo "### Set permissions masks ###"
