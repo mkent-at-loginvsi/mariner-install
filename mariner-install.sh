@@ -207,6 +207,11 @@ yum install -y \
      libicu
 
 echo "----------------------------------------------------------------"
+echo "### Download install files ###"
+echo "----------------------------------------------------------------"
+curl -o $tar_file https://prodcampapispec.s3.us-west-1.amazonaws.com/appliance-5.5.2.tar.gz
+
+echo "----------------------------------------------------------------"
 echo "### Unzipping arhive and installing files ###"
 echo "----------------------------------------------------------------"
 mkdir -p $temp_dir
