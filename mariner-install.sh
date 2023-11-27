@@ -43,7 +43,7 @@ if [ $FREE -lt 27262976 ]; then # 26G = 26*1024*1024k
      echo "----------------------------------------------------------------"
      echo "### The installation requires 26 GB Free on the root partition (/)! ###"
      echo "----------------------------------------------------------------"
-     exit 1
+     #exit 1
 fi
 
 echo "----------------------------------------------------------------"
@@ -365,7 +365,7 @@ echo ""
 echo "----------------------------------------------------------------"
 sed -i 's/reboot/#reboot/g' /loginvsi/bin/firstrun
 domainname $dnsdomainname
-"bash /loginvsi/bin/firstrun"
+bash /loginvsi/bin/firstrun
 
 echo "----------------------------------------------------------------"
 echo "### Copy CA to Cert Path ###"
