@@ -310,6 +310,18 @@ docker load -i $temp_dir/appliance/images/*
 
 echo "$password" | base64 >/home/admin/.password
 
+mv /etc/systemd/scripts/ip4save /etc/systemd/scripts/ip4save.orig
+mv /etc/systemd/scripts/ip6save /etc/systemd/scripts/ip6save.orig
+
+echo "----------------------------------------------------------------"
+echo "### Correcting iptables... ###"
+echo "----------------------------------------------------------------"
+iptables -I INPUT -p icmp --icmp-type timestamp-request -j DROP
+iptables -I OUTPUT -p icmp --icmp-type timestamp-reply -j DROP
+iptables --policy INPUT ACCEPT
+iptables --policy OUTPUT ACCEPT
+iptables-save > /etc/systemd/scripts/ip4save
+
 echo "----------------------------------------------------------------"
 echo "### Fix firstrun ###"
 echo "----------------------------------------------------------------"
@@ -332,10 +344,10 @@ echo "----------------------------------------------------------------"
 echo "### Prevent Cloud Init changing hostname ###"
 echo "----------------------------------------------------------------"
 if [ -f /etc/cloud/cloud.cfg ]; then
-     sed -i '/preserve_hostname: false,preserve_hostname: true/g' /etc/cloud/cloud.cfg
-     sed -i 's/- set_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
-     sed -i 's/- update_hostname/#- set_hostname/g' /etc/cloud/cloud.cfg
-     sed -i 's/- update_etc_hosts/#- set_hostname/g' /etc/cloud/cloud.cfg
+     sed -i 's/preserve_hostname: false/preserve_hostname: true/g' /etc/cloud/cloud.cfg
+     sed -i 's/ - set_hostname/ #- set_hostname/g' /etc/cloud/cloud.cfg
+     sed -i 's/ - update_hostname/ #- update_hostname/g' /etc/cloud/cloud.cfg
+     sed -i 's/ - update_etc_hosts/ #- update_etc_hosts/g' /etc/cloud/cloud.cfg
 fi
 
 echo "----------------------------------------------------------------"
@@ -450,3 +462,7 @@ chmod 755 /etc/systemd/system/pi_guard.service
 chown root:root /etc/systemd/system/pi_guard.service
 
 sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
+
+echo "----------------------------------------------------------------"
+echo "### Rebooting ###"
+echo "----------------------------------------------------------------"
