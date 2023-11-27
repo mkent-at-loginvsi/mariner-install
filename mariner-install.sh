@@ -261,16 +261,15 @@ systemctl enable loginvsid
 
 mv $temp_dir/appliance/usr/bin/pdmenu /usr/bin/pdmenu
 
-chmod -R +x /loginvsi/bin/*
-chmod +x /usr/bin/loginvsid
-chown root:root /usr/bin/loginvsid
-
 echo "----------------------------------------------------------------"
 echo "### Download and Install PDMENU ###"
 echo "----------------------------------------------------------------"
 curl -o $temp_dir/appliance/pdmenu-1.3.2-3.2.x86_64.rpm https://download.opensuse.org/repositories/shells/CentOS_5/x86_64/pdmenu-1.3.2-3.2.x86_64.rpm
 rpm -ivh --nodeps $temp_dir/appliance/*.rpm
 
+chmod -R +x /loginvsi/bin/*
+chmod +x /usr/bin/loginvsid
+chown root:root /usr/bin/loginvsid
 
 echo "----------------------------------------------------------------"
 echo "### Uninstalling Docker ###"
@@ -318,8 +317,10 @@ sed -i '\|etc/init.d/ssh stop|d' /loginvsi/bin/firstrun
 sed -i '\|rm -f /etc/ssh/ssh_host_*|d' /loginvsi/bin/firstrun
 sed -i '\|/etc/init.d/ssh start|d' /loginvsi/bin/firstrun
 sed -i '\|dpkg-reconfigure -f noninteractive openssh-server|d' /loginvsi/bin/firstrun
-sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/bin/firstrun
-sed -i 's/update-ca-certificate/update-ca-trust/g' /loginvsi/bin/firstrun
+sed -i 's#/usr/local/share/ca-certificates/#/etc/pki/ca-trust/source/anchors/#g' /loginvsi/bin/firstrun
+sed -i 's/update-ca-certificates/update-ca-trust/g' /loginvsi/bin/firstrun
+sed -i 's#/usr/local/share/ca-certificates/#/etc/pki/ca-trust/source/anchors/#g' /loginvsi/bin/menu/regeneratessl
+sed -i 's/update-ca-certificates/update-ca-trust/g' /loginvsi/bin/menu/regeneratessl
 
 echo "----------------------------------------------------------------"
 echo "### Fix Appliance Guard Url ###"
@@ -366,6 +367,10 @@ cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certifica
 # # Set /loginvsi/bin/grafana
 # chmod -R 555 /loginvsi/bin/grafana
 # chown -R root:root /loginvsi/bin/grafana
+
+# # Set /loginvsi/content
+chmod 755 /loginvsi/content
+chown admin:admin /loginvsi/content
 
 # # Set /loginvsi/content/zip
 chmod 775 /loginvsi/content/zip
