@@ -5,6 +5,7 @@
 temp_dir="/install/mariner-install"
 tar_file="appliance.tar.gz"
 username="admin"
+dnsdomainname="westus.cloudapp.azure.com"
 
 # Need 2CPU
 # Need 4GB RAM
@@ -346,15 +347,31 @@ sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#
 sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/ExternalDB/docker-compose.yml
 sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/compose/ExternalDB/docker-compose.migration.yml
 
+#Docker does not have access to symlinks to certificates, so we copy the ca bundle back
+unlink /etc/ssl/certs/ca-certificates.crt
+cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certificates.crt
+
+echo "----------------------------------------------------------------"
+echo "### completing firstrun ###"
+echo "----------------------------------------------------------------"
+touch -f /loginvsi/first_run.chk
+
+echo "----------------------------------------------------------------"
+echo "Installation is complete, but we need to configure some things."
+#echo "As root, run the following commands:"
+#echo "domainname <yourdnssuffix ie: westus.cloudapp.azure.com>"
+#echo "bash /loginvsi/bin/firstrun"
+echo ""
+echo "----------------------------------------------------------------"
+sed -i 's/reboot/#reboot/g' /loginvsi/bin/firstrun
+domainname $dnsdomainname
+"bash /loginvsi/bin/firstrun"
+
 echo "----------------------------------------------------------------"
 echo "### Copy CA to Cert Path ###"
 echo "----------------------------------------------------------------"
 cp /certificates/CA.crt /etc/pki/ca-trust/source/anchors
 update-ca-trust
-
-#Docker does not have access to symlinks to certificates, so we copy the ca bundle back
-unlink /etc/ssl/certs/ca-certificates.crt
-cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certificates.crt
 
 # echo "----------------------------------------------------------------"
 # echo "### Set permissions masks ###"
@@ -433,16 +450,3 @@ chmod 755 /etc/systemd/system/pi_guard.service
 chown root:root /etc/systemd/system/pi_guard.service
 
 sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
-
-echo "----------------------------------------------------------------"
-echo "### completing firstrun ###"
-echo "----------------------------------------------------------------"
-touch -f /loginvsi/first_run.chk
-
-echo "----------------------------------------------------------------"
-echo "Installation is complete, but we need to configure some things."
-echo "As root, run the following commands:"
-echo "domainname <yourdnssuffix ie: westus.cloudapp.azure.com>"
-echo "bash /loginvsi/bin/firstrun"
-echo ""
-echo "----------------------------------------------------------------"
