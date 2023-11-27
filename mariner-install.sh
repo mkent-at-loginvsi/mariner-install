@@ -161,6 +161,42 @@ do
 done
 
 echo "----------------------------------------------------------------"
+echo "### Fix FSTRIM ###"
+echo "----------------------------------------------------------------"
+echo '[Unit]
+Description=Discard unused blocks on filesystems from /etc/fstab
+Documentation=man:fstrim(8)
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/fstrim -A
+PrivateDevices=no
+PrivateNetwork=yes
+PrivateUsers=no
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+MemoryDenyWriteExecute=yes
+SystemCallFilter=@default @file-system @basic-io @system-service' > /etc/systemd/system/fstrim.service
+
+echo '[Unit]
+Description=Discard unused blocks once a week
+Documentation=man:fstrim
+ConditionVirtualization=!container
+
+[Timer]
+OnCalendar=weekly
+AccuracySec=1h
+Persistent=true
+RandomizedDelaySec=6000
+
+[Install]
+WantedBy=timers.target' > /etc/systemd/system/fstrim.timer
+
+sudo systemctl enable fstrim.timer
+
+echo "----------------------------------------------------------------"
 echo "### Allow ssh Password Authentication ###"
 echo "----------------------------------------------------------------"
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
@@ -282,6 +318,8 @@ sed -i '\|etc/init.d/ssh stop|d' /loginvsi/bin/firstrun
 sed -i '\|rm -f /etc/ssh/ssh_host_*|d' /loginvsi/bin/firstrun
 sed -i '\|/etc/init.d/ssh start|d' /loginvsi/bin/firstrun
 sed -i '\|dpkg-reconfigure -f noninteractive openssh-server|d' /loginvsi/bin/firstrun
+sed -i 's#/usr/local/share/ca-certificates:/#/etc/pki/ca-trust/source/anchors:/#g' /loginvsi/bin/firstrun
+sed -i 's/update-ca-certificate/update-ca-trust/g' /loginvsi/bin/firstrun
 
 echo "----------------------------------------------------------------"
 echo "### Fix Appliance Guard Url ###"
@@ -330,12 +368,12 @@ cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certifica
 # chown -R root:root /loginvsi/bin/grafana
 
 # # Set /loginvsi/content/zip
-# chmod 775 /loginvsi/content/zip
-# chown -R admin:loginenterprise /loginvsi/content/zip
+chmod 775 /loginvsi/content/zip
+chown -R admin:loginenterprise /loginvsi/content/zip
 
 # #Set /loginvsi/logs
-# chmod -R 755 /loginvsi/logs
-# chown -R root:loginenterprise /loginvsi/logs
+chmod -R 755 /loginvsi/logs
+chown -R root:loginenterprise /loginvsi/logs
 
 # #Set /loginvsi/settings
 # chmod -R 755 /loginvsi/settings
@@ -343,53 +381,53 @@ cp /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/certs/ca-certifica
 
 # #--- Files
 # #Set /loginvsi/.env /loginvsi/.title
-# chmod 644 /loginvsi/.env /loginvsi/.title
-# chown root:root /loginvsi/.env /loginvsi/.title
+chmod 644 /loginvsi/.env /loginvsi/.title
+chown root:root /loginvsi/.env /loginvsi/.title
 
 # #Set /loginvsi/bin/firstrun
-# chmod 755 /loginvsi/bin/firstrun
-# chown root:root /loginvsi/bin/firstrun
+chmod 755 /loginvsi/bin/firstrun
+chown root:root /loginvsi/bin/firstrun
 
 # #Set /loginvsi/bin/start/trimfilesystem
-# chmod 555 /loginvsi/bin/start/trimfilesystem
-# chown root:root /loginvsi/bin/start/trimfilesystem
+chmod 555 /loginvsi/bin/start/trimfilesystem
+chown root:root /loginvsi/bin/start/trimfilesystem
 
 # #Set /loginvsi/bin/start/cleanupdockerimages
-# chmod 555 /loginvsi/bin/start/cleanupdockerimages
-# chown root:root /loginvsi/bin/start/cleanupdockerimages
+chmod 555 /loginvsi/bin/start/cleanupdockerimages
+chown root:root /loginvsi/bin/start/cleanupdockerimages
 
 # #Set /loginvsi/content/CA.crt
-# chmod 644 /loginvsi/content/CA.crt
-# chown admin:admin /loginvsi/content/CA.crt
+chmod 644 /loginvsi/content/CA.crt
+#chown admin:admin /loginvsi/content/CA.crt
 
 # #Set /loginvsi/first_run.chk
-# chmod 644 /loginvsi/first_run.chk
-# chown root:root /loginvsi/first_run.chk
+chmod 644 /loginvsi/first_run.chk
+chown root:root /loginvsi/first_run.chk
 
 # #Set /loginvsi/second_run.chk
-# chmod 644 /loginvsi/second_run.chk
-# chown root:root /loginvsi/second_run.chk
+chmod 644 /loginvsi/second_run.chk
+chown root:root /loginvsi/second_run.chk
 
 # #Set /loginvsi/settings/appsettings.all.json
-# chmod 664 /loginvsi/settings/appsettings.all.json
-# chown root:loginenterprise /loginvsi/settings/appsettings.all.json
+chmod 664 /loginvsi/settings/appsettings.all.json
+chown root:loginenterprise /loginvsi/settings/appsettings.all.json
 
 # #Set /loginvsi/content/zip/secured/logon.zip
-# chmod 664 /loginvsi/content/zip/secured/logon.zip
-# chown admin:loginenterprise /loginvsi/content/zip/secured/logon.zip
+chmod 664 /loginvsi/content/zip/secured/logon.zip
+chown admin:loginenterprise /loginvsi/content/zip/secured/logon.zip
 
-# chmod -R +x /loginvsi/bin/*
+chmod -R +x /loginvsi/bin/*
 
-# chmod 755 /usr/bin/loginvsid
-# chown root:root /usr/bin/loginvsid
+chmod 755 /usr/bin/loginvsid
+chown root:root /usr/bin/loginvsid
 
-# chmod 755 /etc/systemd/system/loginvsid.service
-# chown root:root /etc/systemd/system/loginvsid.service
+chmod 755 /etc/systemd/system/loginvsid.service
+chown root:root /etc/systemd/system/loginvsid.service
 
-# chmod 755 /etc/systemd/system/pi_guard.service
-# chown root:root /etc/systemd/system/pi_guard.service
+chmod 755 /etc/systemd/system/pi_guard.service
+chown root:root /etc/systemd/system/pi_guard.service
 
-# sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
+sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
 
 echo "----------------------------------------------------------------"
 echo "### completing firstrun ###"
