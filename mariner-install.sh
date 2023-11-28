@@ -242,6 +242,9 @@ yum install -y \
      unzip \
      nano \
      libicu
+#rpm -ivh https://dl.fedoraproject.org/pub/fedora/linux/releases/38/Everything/x86_64/os/Packages/g/gpm-1.20.7-42.fc38.x86_64.rpm --nodeps
+rpm -ivh https://dl.fedoraproject.org/pub/fedora/linux/releases/38/Everything/x86_64/os/Packages/g/gpm-libs-1.20.7-42.fc38.x86_64.rpm --nodeps
+
 
 echo "----------------------------------------------------------------"
 echo "### Download install files ###"
@@ -310,12 +313,12 @@ docker load -i $temp_dir/appliance/images/*
 
 echo "$password" | base64 >/home/admin/.password
 
-mv /etc/systemd/scripts/ip4save /etc/systemd/scripts/ip4save.orig
-mv /etc/systemd/scripts/ip6save /etc/systemd/scripts/ip6save.orig
-
 echo "----------------------------------------------------------------"
 echo "### Correcting iptables... ###"
 echo "----------------------------------------------------------------"
+mv /etc/systemd/scripts/ip4save /etc/systemd/scripts/ip4save.orig
+mv /etc/systemd/scripts/ip6save /etc/systemd/scripts/ip6save.orig
+
 iptables -I INPUT -p icmp --icmp-type timestamp-request -j DROP
 iptables -I OUTPUT -p icmp --icmp-type timestamp-reply -j DROP
 iptables --policy INPUT ACCEPT
@@ -383,19 +386,24 @@ echo "----------------------------------------------------------------"
 echo "### Copy CA to Cert Path ###"
 echo "----------------------------------------------------------------"
 cp /certificates/CA.crt /etc/pki/ca-trust/source/anchors
+cp /certificates/CA.crt /loginvsi/content
 update-ca-trust
 
-# echo "----------------------------------------------------------------"
-# echo "### Set permissions masks ###"
-# echo "----------------------------------------------------------------"
+echo "----------------------------------------------------------------"
+echo "### Set permissions masks ###"
+echo "----------------------------------------------------------------"
 # #-- Directories
 # # Set /loginvsi
-# chmod -R 755 /loginvsi
-# chown -R admin:admin /loginvsi
+chmod -R 755 /loginvsi
+chown -R admin:admin /loginvsi
 
 # # Set /loginvsi/bin/grafana
-# chmod -R 555 /loginvsi/bin/grafana
-# chown -R root:root /loginvsi/bin/grafana
+chmod -R 555 /loginvsi/bin/grafana
+chown -R root:root /loginvsi/bin/grafana
+
+# # Set /loginvsi/data
+chmod -R 755 /loginvsi/data
+chown -R root:root /loginvsi/data
 
 # # Set /loginvsi/content
 chmod 755 /loginvsi/content
@@ -406,12 +414,12 @@ chmod 775 /loginvsi/content/zip
 chown -R admin:loginenterprise /loginvsi/content/zip
 
 # #Set /loginvsi/logs
-chmod -R 755 /loginvsi/logs
-chown -R root:loginenterprise /loginvsi/logs
+#chmod -R 755 /loginvsi/logs
+#chown -R root:loginenterprise /loginvsi/logs
 
 # #Set /loginvsi/settings
-# chmod -R 755 /loginvsi/settings
-# chown -R 999:loginenterprise /loginvsi/settings
+chmod -R 755 /loginvsi/settings
+chown -R 999:loginenterprise /loginvsi/settings
 
 # #--- Files
 # #Set /loginvsi/.env /loginvsi/.title
@@ -461,8 +469,10 @@ chown root:root /etc/systemd/system/loginvsid.service
 chmod 755 /etc/systemd/system/pi_guard.service
 chown root:root /etc/systemd/system/pi_guard.service
 
+chown admin:admin /usr/bin/startmenu
 sed -i "s#:/home/admin:/bin/bash#:/home/admin:/usr/bin/startmenu#" /etc/passwd
 
 echo "----------------------------------------------------------------"
 echo "### Rebooting ###"
 echo "----------------------------------------------------------------"
+reboot
