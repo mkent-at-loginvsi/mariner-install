@@ -402,8 +402,8 @@ chmod -R 555 /loginvsi/bin/grafana
 chown -R root:root /loginvsi/bin/grafana
 
 # # Set /loginvsi/data
-chmod -R 755 /loginvsi/data
-chown -R root:root /loginvsi/data
+#chmod -R 755 /loginvsi/data
+#chown -R root:root /loginvsi/data
 
 # # Set /loginvsi/content
 chmod 755 /loginvsi/content
