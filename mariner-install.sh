@@ -87,7 +87,7 @@ mkswap /swapfile
 swapon /swapfile
 echo '/swapfile swap swap defailts 0 0'| tee -a /etc/fstab
 
-#TODO: FIX ADMIN CHECK
+#TODO: RETEST ADMIN CHECK
 if id -u "admin" >/dev/null 2>&1; then
   admincheck=$(id -u admin)
 else
